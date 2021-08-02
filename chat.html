@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chat</title>
+    <link rel="stylesheet" href="estilos.css">
+
+    <!-- Carga el núcleo de Firebase JS SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-app.js"></script>
+    <!-- Agrega el manejo de autenticación. -->
+    <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-auth.js">
+    </script>
+     <!-- Agrego la parte de base de datos con firestore -->
+    <script
+    src="https://www.gstatic.com/firebasejs/8.8.1/firebase-firestore.js">
+    </script>
+    <script src="js/init.js"></script>
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+    
+    
+    
+  </head>
+  <body align="center"
+  background="https://images.alphacoders.com/799/799578.png">
+    <h1 align="center" style="color: rgb(79, 255, 152);"><strong>Chat</strong></h1>
+    <fieldset>
+        <legend class="texto">Nombre</legend>
+        <output class="texto2"  id="nombre"></output>
+    </fieldset>
+    <ol id="mensajes" align="center"><li><progress max="100">Cargando…</progress></li></ol>
+    
+    <form action="javascript:agrega();">
+      <input id="texto" type="text" required placeholder="Mensaje" align="center">
+      <button align="center">Enviar</button>
+    </form>
+    <br>
+        <button class="boton1" type="button" onclick="terminaSesión()">Terminar Sesión</button>
+    <br>
+    <footer style="color: rgb(79, 255, 152);">Copyrigth HGSamantha</footer>
+
+    <!--Inicio de la funcionalidad del chat-->
+    <script>
+      // @ts-check
+      /** Nombre de usuario atenticado por Firebase. */
+      let usuario = "";
+      let avatar = "";
+      /** Conexión al sistema de autenticación de Firebase. */
+      // @ts-ignore
+      const auth = firebase.auth();
+      
+      /** Tipo de autenticación de usuarios. En este caso es con Google. */
+      // @ts-ignore
+      const provider = new firebase.auth.GoogleAuthProvider();
+      /* Configura el proveedor de Google para que permita seleccionar de una
+       * lista. */
+      provider.setCustomParameters({ prompt: "select_account" });
+      /* Recibe una función que se invoca cada que hay un cambio en la
+       * autenticación y recibe el modelo con las características del usuario.*/
+      auth.onAuthStateChanged(
+        /** Recibe las características del usuario o null si no ha iniciado
+         * sesión. */
+        async usuarioAuth => {
+          if (usuarioAuth && usuarioAuth.email) {
+            // Usuario aceptado.
+            usuario = usuarioAuth.email;
+             // @ts-ignore Muestra el nombre registrado en Google.
+             nombre.value = usuarioAuth.displayName;
+            // @ts-ignore Muestra el avatar registrado en Google.
+            avatar.src = usuarioAuth.photoURL;
+
+            // Muestra los mensajes del chat.
+            muestraMensajes();
+          } else {
+            // No ha iniciado sesión. Pide datos para iniciar sesión.
+            await auth.signInWithRedirect(provider);
+          }
+        },
+        // Función que se invoca si hay un error al verificar el usuario.
+        procesaError
+      );
+      /** Conexión a la base de datos. */
+      // @ts-ignore
+      const firestore = firebase.firestore();
+      /** Agrega un usuario a la base de datos. */
+      
+      function agrega() {
+
+        /* "MENSAJE" es el nombre de la colección a la que se agregan los datos.
+         * "USUARIO", "TEXTO" y "TIMESTAMP" son los nombres de los campos en el
+         * documento.
+         * El timestamp contiene la fecha y hora en que se agrega el registro.*/
+
+        // @ts-ignore
+      var user = firebase.auth().currentUser;
+
+        firestore.collection("MENSAJE").add({
+          USUARIO: usuario,
+
+          AVATAR: user.photoURL,
+          // @ts-ignore
+          TEXTO: texto.value.trim(),
+          // @ts-ignore
+          TIMESTAMP: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        // @ts-ignore
+        texto.value=""; 
+      }
+      /** Muestra los mensaje almacenados en la collection "MENSAJE". Se
+       * actualiza automáticamente. */
+      function muestraMensajes() {
+        /* Consulta que se actualiza automáticamente. Pide todos los registros
+         * de la colección "MENSAJE" ordenador por el campo "TIMESTAMP" de forma
+         * descendiente. */
+        firestore.collection("MENSAJE").orderBy("TIMESTAMP", "asc")
+          .onSnapshot(
+            /** Función que muestra los datos enviados por el servidor. Si los
+             * datos cambian en el servidor, se vuelve a invocar esta función y
+             * recibe los datos actualizados.
+             * @param {Array} querySnapshot estructura parecida a un Array, que
+             * contiene una copia de los datos en el servidor. */
+            querySnapshot => {
+              // Vacía la lista con los mensajes.
+              // @ts-ignore
+              mensajes.innerHTML = "";
+              /* Revisa un por uno los registros de la consulta y los muestra.
+               * El iterador "doc" es un registro de la base de datos. */
+              querySnapshot.forEach(doc => {
+                // recupera los datos almacenados en el registro.
+                var f=new Date;
+                var format;
+                format = [f.getDate(),
+                f.getMonth()+1,
+                f.getFullYear()].join('/')+' '+[
+                  f.getHours(),
+                  f.getMinutes()].join(':');
+
+                const data = doc.data();
+                /* Agrega un li con los datos del registro, que se codifican
+                 * para evitar inyección de código. */
+                // @ts-ignore
+                mensajes.innerHTML += /* html */
+                  `<li>
+                  <ul>
+                  </ul>
+                  <br>
+                  <div style="color: #FFFFFF; font-style: normal"> 
+                  <img id="avatar" alt="Avatar" class="avatar" width="10px" height="10px" src="${cod(data.AVATAR)} "> ${cod(data.USUARIO)} 
+                  <br> <br>${cod(data.TEXTO)} <br>${cod(format)}</li>`;
+              })
+            },
+            /* Función que se invoca cuando hay un error. Muestra el error. Al
+             * invocar esta función la conexión se cancela. Por lo mismo, se
+             * vuelve a conectar. */
+            e => {
+              procesaError(e);
+              // Intenta conectarse otra vez.
+              muestraMensajes();
+            }
+          )
+      }
+
+      /** Procesa un error. Muestra el objeto en la consola y un cuadro de
+       * alerta con el mensaje.
+       * @param {Error} e descripción del error. */
+      function procesaError(e) {
+        console.log(e);
+        alert(e.message);
+      }
+
+      /** Map que contiene el texto de escape de los caracteres especiales de
+       * HTML.
+       * @type {Readonly<Map<string, string>> } */
+      const codMap = Object.freeze(new Map([['&', '&amp;'], ['<', '&lt;'],
+      ['>', '&gt;'], ['"', '&quot;'], ["'", '&#039;']]));
+
+      /** Codifica un texto para que escape los caracteres especiales y no se
+       * pueda interpretar como HTML. Esta técnica evita la inyección de código.
+       * @param {string} texto
+       * @returns {string} un texto que no puede interpretarse como HTML. */
+      function cod(texto) {
+        return (texto || "").replace(/[&<>"']/g, letra => codMap.get(letra));
+      }
+    </script>
+  </body>
+</html>
