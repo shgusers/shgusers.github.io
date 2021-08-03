@@ -60,7 +60,7 @@ p label>* {
   box-sizing: border-box;
   width: 100%;
 }
-body, header, mi-nav ul li {
+body, header {
   background-color: #ff9de1;
 }
 .avatar {
