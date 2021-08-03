@@ -29,24 +29,22 @@
   <link rel="stylesheet"
     href="css/estilos.css">
 </head>
-<body>
+<body >
   <mi-nav></mi-nav>
   <form name="forma">
-    <header>
-      <h1>Chat</h1>
-      <div class="herramientas">
-        <input name="texto"
-          required
-          placeholder="Mensaje">
-        <button>Enviar</button>
-      </div>
-    </header>
     <ul id="lista" class="lista">
       <li>
         <mi-progreso>
         </mi-progreso>
       </li>
     </ul>
+    <header>
+      <h1 align="center" style="color: rgb(131, 131, 131);"><strong>Chat</strong></h1>
+      <div class="herramientas">
+        <input id="texto" type="text" required placeholder="Mensaje">
+        <button>Enviar</button>
+      </div>
+    </header>
     <mi-footer></mi-footer>
   </form>
   <script type="module"

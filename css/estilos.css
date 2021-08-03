@@ -60,3 +60,6 @@ p label>* {
   box-sizing: border-box;
   width: 100%;
 }
+body, header{
+  background-color: #ff9de1;
+}
