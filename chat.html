@@ -31,23 +31,22 @@
 </head>
 <body>
   <mi-nav style="background-color: #ff9de1;"></mi-nav>
-  <form name="forma">
-    <h1 align="center" style="color: rgb(175, 143, 143);"><strong>Chat</strong></h1>
-    
+  <form name="forma"> 
+    <h1 align="center" style="color: rgb(131, 131, 131);">Chat</h1>
     <ul id="lista" class="lista">
       <li>
         <mi-progreso>
         </mi-progreso>
       </li>
     </ul>
-
     <header>
       <div class="herramientas">
-        <input id="texto" type="text" required placeholder="Mensaje">
+        <input name="texto"
+          required
+          placeholder="Mensaje">
         <button>Enviar</button>
       </div>
     </header>
-    
     <mi-footer></mi-footer>
   </form>
   <script type="module"
